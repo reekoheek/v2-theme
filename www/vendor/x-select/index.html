@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>X-Select</title>
+
+
+
+</head>
+<body>
+
+<template id="x-select-root">
+    <style>
+        .twitter-typeahead {
+            display: block;
+            width: 100%;
+        }
+
+        .tt-dropdown-menu {
+            width: 422px;
+            margin-top: 12px;
+            padding: 8px 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            /*-webkit-border-radius: 8px;
+            -moz-border-radius: 8px;
+            border-radius: 8px;*/
+            -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+            -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+            box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        }
+
+        .tt-suggestion {
+            padding: 3px 20px;
+            font-size: 18px;
+            line-height: 24px;
+        }
+
+        .tt-suggestion.tt-cursor {
+            color: #fff;
+            background-color: #0097cf;
+
+        }
+
+        .tt-suggestion p {
+            margin: 0;
+        }
+
+        input {
+            font-size: 1rem;
+            display: block;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            border: 0;
+            outline: 0;
+        }
+    </style>
+
+    <input class="typeahead" type="text" placeholder="">
+</template>
+
+<script type="text/javascript" src="js/typeahead.js"></script>
+<script type="text/javascript" src="js/bloodhound.js"></script>
+<script type="text/javascript">
+(function() {
+    var currentScript = document.currentScript || document._currentScript;
+    var ownerDocument = document.currentScript.ownerDocument;
+
+    var XSelectProto = Object.create(HTMLInputElement.prototype);
+
+    XSelectProto.createdCallback = function() {
+
+        var t = ownerDocument.querySelector('#x-select-root'),
+            that = this,
+            options;
+
+        this.template = document.importNode(t.content, true);
+        this.url = this.getAttribute('url');
+        this.foreignkey = this.getAttribute('foreignkey');
+        this.foreignlabel = this.getAttribute('foreignlabel');
+
+        this.typeaheadInput = this.template.querySelector('input.typeahead');
+        this.typeaheadInput.setAttribute('placeholder', this.getAttribute('placeholder'));
+
+        this.root = this.createShadowRoot();
+        this.root.appendChild(this.template);
+
+        this.addEventListener('focus', function() {
+            this.typeaheadInput.focus();
+        });
+
+        if (this.list) {
+            options = this.list.querySelectorAll('option');
+        }
+
+        if (this.value) {
+            if (this.url) {
+                $.ajax({
+                    'url': this.url + '?$id=' + this.value
+                }).done(function(data) {
+                    if (data && data.entries && data.entries[0]) {
+                        that.typeaheadInput.value = data.entries[0][that.foreignlabel];
+                    }
+                });
+            } else {
+                for(var i = 0; i < options.length; i++) {
+                    if (options[i].value == this.value) {
+                        this.typeaheadInput.value = options[i].innerHTML;
+                    }
+                }
+            }
+        }
+
+
+        var source = function(query, cb) {
+            var suggestions = [];
+
+            if (that.url) {
+                $.ajax({
+                    'url': that.url + '?!match=' + query
+                }).done(function(data) {
+                    if (data && data.entries) {
+                        for(var i in data.entries) {
+                            var entry = data.entries[i];
+                            suggestions.push({
+                                label: entry[that.foreignlabel],
+                                value: entry[that.foreignkey]
+                            });
+                        }
+                        cb(suggestions);
+
+                    }
+                });
+            } else {
+                var regex = new RegExp(query, 'i');
+                for(var i = 0; i < options.length; i++) {
+                    var option = options[i];
+                    var label = option.innerHTML;
+                    var value = option.value || label;
+
+                    if (regex.test(label)) {
+                        suggestions.push({
+                            label: label,
+                            value: value
+                        });
+                    }
+
+                }
+                cb(suggestions);
+            }
+        };
+
+        // var bestPictures = new Bloodhound({
+        //     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+        //     queryTokenizer: Bloodhound.tokenizers.whitespace,
+        //     prefetch: '../data/films/post_1960.json',
+        //     remote: '../data/films/queries/%QUERY.json'
+        // });
+        // bestPictures.initialize();
+
+        $(this.root.querySelector('.typeahead')).typeahead({
+            hint: true,
+            highlight: true,
+            minLength: 1
+        },
+        {
+            name: this.name,
+            displayKey: 'label',
+            source: source
+        }).on('typeahead:selected', function(evt, o) {
+            that.value = o.value;
+        });
+
+        this.form = $('form')[0];
+    };
+
+    document.registerElement('x-select', {
+        prototype: XSelectProto,
+        extends: 'input'
+    });
+})();
+</script>
+
+</body>
+</html>
