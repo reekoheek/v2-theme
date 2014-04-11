@@ -1,91 +1,45 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>X-Select</title>
-
-
-
-</head>
-<body>
-
-<template id="x-select-root">
-    <style>
-        .twitter-typeahead {
-            display: block;
-            width: 100%;
-        }
-
-        .tt-dropdown-menu {
-            width: 422px;
-            margin-top: 12px;
-            padding: 8px 0;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            /*-webkit-border-radius: 8px;
-            -moz-border-radius: 8px;
-            border-radius: 8px;*/
-            -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-            -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-            box-shadow: 0 5px 10px rgba(0,0,0,.2);
-        }
-
-        .tt-suggestion {
-            padding: 3px 20px;
-            font-size: 18px;
-            line-height: 24px;
-        }
-
-        .tt-suggestion.tt-cursor {
-            color: #fff;
-            background-color: #0097cf;
-
-        }
-
-        .tt-suggestion p {
-            margin: 0;
-        }
-
-        input {
-            font-size: 1rem;
-            display: block;
-            width: 100%;
-            padding: 0;
-            margin: 0;
-            border: 0;
-            outline: 0;
-        }
-    </style>
-
-    <input class="typeahead" type="text" placeholder="">
-</template>
-
-<script type="text/javascript" src="js/typeahead.js"></script>
-<script type="text/javascript" src="js/bloodhound.js"></script>
-<script type="text/javascript">
 (function() {
+    "use strict";
+
     var currentScript = document.currentScript || document._currentScript;
     var ownerDocument = document.currentScript.ownerDocument;
+
+    var supports = {
+        shadowDOM: (!(HTMLElement.prototype.createShadowRoot + "").match(/watchShadow/))
+    };
 
     var XSelectProto = Object.create(HTMLInputElement.prototype);
 
     XSelectProto.createdCallback = function() {
+        var options,
+            that = this;
 
-        var t = ownerDocument.querySelector('#x-select-root'),
-            that = this,
-            options;
-
-        this.template = document.importNode(t.content, true);
         this.url = this.getAttribute('url');
         this.foreignkey = this.getAttribute('foreignkey');
         this.foreignlabel = this.getAttribute('foreignlabel');
 
-        this.typeaheadInput = this.template.querySelector('input.typeahead');
+        this.typeaheadInput = $('<input class="typeahead" type="text" placeholder="">')[0];
         this.typeaheadInput.setAttribute('placeholder', this.getAttribute('placeholder'));
 
-        this.root = this.createShadowRoot();
-        this.root.appendChild(this.template);
+        if (supports.shadowDOM) {
+            this.root = this.createShadowRoot();
+
+            this.valueInput = this;
+        } else {
+            this.style.display = 'none';
+            this.root = document.createElement('div');
+
+            this.valueInput = document.createElement('input');
+            this.valueInput.type = 'hidden';
+            this.valueInput.name = this.name;
+            this.root.appendChild(this.valueInput);
+
+            this.root.className = 'x-select-root';
+            this.parentNode.appendChild(this.root);
+
+        }
+
+        this.root.appendChild(this.typeaheadInput);
 
         this.addEventListener('focus', function() {
             this.typeaheadInput.focus();
@@ -170,10 +124,9 @@
             displayKey: 'label',
             source: source
         }).on('typeahead:selected', function(evt, o) {
-            that.value = o.value;
+            that.valueInput.value = o.value;
         });
 
-        this.form = $('form')[0];
     };
 
     document.registerElement('x-select', {
@@ -181,7 +134,3 @@
         extends: 'input'
     });
 })();
-</script>
-
-</body>
-</html>

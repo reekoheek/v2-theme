@@ -2,7 +2,7 @@
 use \ROH\Theme\V2Theme\Helper\Form;
 ?>
 
-<h2>Update <?php echo f('controller.name') ?></h2>
+<h2><?php echo f('controller.name') ?>: Update</h2>
 
 <form method="POST">
 

@@ -2,10 +2,10 @@
 use \ROH\Theme\V2Theme\Helper\Form;
 ?>
 
-<h2>Create <?php echo f('controller.name') ?></h2>
+<h2><?php echo f('controller.name') ?>: Create</h2>
 
 <form method="POST">
-    <?php echo Form::create()->show() ?>
+    <?php echo Form::create()->of($entry)->show() ?>
 
     <div>
     <a href="<?php echo f('controller.url', '/') ?>" class="button">Back</a>

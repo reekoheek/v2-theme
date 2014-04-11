@@ -1,5 +1,5 @@
 
-<h2><?php echo f('controller.name') ?> List</h2>
+<h2><?php echo f('controller.name') ?>: List</h2>
 
 <a href="<?php echo f('controller.url', '/null/create') ?>" class="button">Create</a>
 
