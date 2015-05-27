@@ -49,10 +49,10 @@ class Form {
     }
 
     public function input($key) {
-        return $this->schema[$key]->input(@$this->data[$key])."\n";
+        return $this->schema[$key]->format('input', @$this->data[$key])."\n";
     }
 
     public function readonly($key) {
-        return $this->schema[$key]->set('readonly', true)->input(@$this->data[$key])."\n";
+        return $this->schema[$key]->format('readonly', @$this->data[$key])."\n";
     }
 }

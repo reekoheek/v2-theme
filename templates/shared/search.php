@@ -7,7 +7,7 @@
     <?php foreach($entries as $entry): ?>
     <li>
         <a href="<?php echo f('controller.url', '/'.$entry['$id']) ?>">
-        <?php echo $entry[key($entry->collection->schema())] ?>
+        <?php echo $entry->format() ?>
         </a>
     </li>
     <?php endforeach ?>

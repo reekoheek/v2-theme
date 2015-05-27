@@ -1,12 +1,12 @@
 <h2>
-    <?php echo 'Delete '.f('controller.name').' ('.count($ids).' entries)' ?>
+    <?php echo 'Delete '.f('controller.name') ?>
 </h2>
 
 
 <form action="" method="POST">
     <input type="hidden" name="confirm" value="1">
     <p>
-        Are you sure want to delete <?php echo count($ids).' entries' ?>?
+        Are you sure want to delete?
     </p>
 
     <div>
